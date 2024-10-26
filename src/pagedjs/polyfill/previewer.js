@@ -79,7 +79,7 @@ class Previewer {
 		return param;
 	}
 
-	wrapContent() {
+	wrapContent(content) {
 		// Wrap body in template tag
 		let body = document.querySelector("body");
 
@@ -91,8 +91,7 @@ class Previewer {
 			// Otherwise create one
 			template = document.createElement("template");
 			template.dataset.ref = "pagedjs-content";
-			template.innerHTML = body.innerHTML;
-			body.innerHTML = "";
+			template.innerHTML = content.innerHTML;
 			body.appendChild(template);
 		}
 
@@ -137,13 +136,9 @@ class Previewer {
 
 		await this.hooks.beforePreview.trigger(content, renderTo);
 
-		if (!content) {
-			content = this.wrapContent();
-		}
+		content = this.wrapContent(content);
 
-		if (!stylesheets) {
-			stylesheets = this.removeStyles();
-		}
+		stylesheets = this.removeStyles();
 
 		this.polisher.setup();
 
