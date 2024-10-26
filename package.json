@@ -1,0 +1,20 @@
+{
+  "name": "pagedjs",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "sass": "^1.80.4",
+    "typescript": "~5.6.2",
+    "vite": "^5.4.9",
+    "vite-plugin-singlefile": "^2.0.2"
+  },
+  "dependencies": {
+    "pagedjs": "^0.4.3"
+  }
+}

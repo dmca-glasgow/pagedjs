@@ -1,0 +1,80 @@
+@page {
+  size: A4;
+  margin: 25mm 25mm 26mm 25mm;
+}
+
+// header and footer ------
+
+.pagedjs_page:not(.pagedjs_first_page) {
+  .pagedjs_margin-top .pagedjs_margin-top-center {
+    align-items: flex-end;
+
+    .pagedjs_margin-content {
+      visibility: visible;
+      padding-bottom: 1.5em;
+
+      &::after {
+        content: "Complex Analysis";
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .pagedjs_margin-bottom .pagedjs_margin-bottom-right {
+    align-items: flex-start;
+
+    .pagedjs_margin-content {
+      visibility: visible;
+      padding-top: 1em;
+
+      &::after {
+        content: "Page " counter(page) " of " counter(pages);
+      }
+    }
+  }
+
+  .pagedjs_margin-bottom .pagedjs_margin-bottom-left {
+    align-items: flex-start;
+
+    .pagedjs_margin-content {
+      visibility: visible;
+      padding-top: 1em;
+
+      &::after {
+        content: string(title);
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+.pagedjs_first_page {
+  .pagedjs_margin-bottom .pagedjs_margin-bottom-center .pagedjs_margin-content {
+    visibility: visible;
+
+    &::after {
+      content: "Page " counter(page) " of " counter(pages);
+    }
+  }
+}
+
+// page rules ------
+
+h2 {
+  break-before: always;
+  string-set: title content(text);
+}
+
+h3, h4, h5, h6, .boxout .type {
+  break-after: avoid;
+}
+.boxout .proof-box {
+  break-before: avoid;
+}
+
+// This could be a preference but uses a lot more pages
+// .boxout {
+//   break-inside: avoid;
+// }
