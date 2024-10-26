@@ -1,5 +1,5 @@
 // @ts-expect-error
-import { Previewer } from 'pagedjs';
+import Previewer from './pagedjs/polyfill/previewer';
 
 const app = document.querySelector<HTMLDivElement>('.app');
 const print = document.querySelector<HTMLDivElement>('.print');

@@ -1,4 +1,5 @@
 @use "sass:meta";
+@import './pagedjs/interface.css';
 @include meta.load-css('page-header-footer.scss');
 @include meta.load-css('demo.scss');
 
