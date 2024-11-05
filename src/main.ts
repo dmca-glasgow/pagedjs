@@ -2,8 +2,10 @@
 import Previewer from './pagedjs/polyfill/previewer';
 
 const app = document.querySelector<HTMLDivElement>('.app');
-const print = document.querySelector<HTMLDivElement>('.print');
+const printView = document.querySelector<HTMLDivElement>('.print-view');
+const pages = document.querySelector<HTMLDivElement>('.print-view .pages');
 const webBtn = document.querySelector<HTMLButtonElement>('.web-btn')
+const pagesBtn = document.querySelector<HTMLButtonElement>('.pages-btn')
 const printBtn = document.querySelector<HTMLButtonElement>('.print-btn')
 
 const config = {
@@ -12,7 +14,7 @@ const config = {
 	after: undefined,
 	content: app,
 	stylesheets: undefined,
-	renderTo: print,
+	renderTo: pages,
 	settings: undefined
 };
 
@@ -29,6 +31,7 @@ new Promise((resolve) => {
 		}
 	};
 }).then(async function () {
+  printView?.classList.remove('scale')
   const chunker = await previewer.preview(
     config.content,
     undefined,
@@ -36,22 +39,39 @@ new Promise((resolve) => {
   );
   // console.log(chunker.pages)
   console.log(`took: ${(chunker.performance / 1000).toFixed(2)}s`)
+  printView?.classList.add('scale')
 });
 
 webBtn?.addEventListener('click', () => {
   webBtn.classList.add('active')
-  printBtn?.classList.remove('active')
+  pagesBtn?.classList.remove('active')
   app?.classList.add('show')
-  print?.classList.remove('show')
+  printView?.classList.remove('show')
 })
 
-printBtn?.addEventListener('click', () => {
-  printBtn.classList.add('active')
+pagesBtn?.addEventListener('click', () => {
+  pagesBtn.classList.add('active')
   webBtn?.classList.remove('active')
-  print?.classList.add('show')
+  printView?.classList.add('show')
   app?.classList.remove('show')
 })
 
-addEventListener("beforeprint", () => {
-  console.log('printing')
-});
+printBtn?.addEventListener('click', () => {
+  window.print()
+})
+
+// document.addEventListener("keydown", (e) => {
+//   if (e.metaKey && e.key === 'p') {
+//     e.preventDefault()
+//     console.log('print request')
+//     window.print()
+//   }
+// });
+
+// window.addEventListener("beforeprint", () => {
+//   console.log('beforeprint')
+// });
+
+// window.addEventListener("afterprint", () => {
+//   console.log('afterprint')
+// });

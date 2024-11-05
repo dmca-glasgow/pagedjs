@@ -2,34 +2,26 @@ body {
   overflow-x: hidden;
 }
 
-main {
-  width: 200%;
-  margin-left: -100%;
-
-  & > .app, & > .print {
-    float: left;
-    width: 50%;
-    box-sizing: border-box;
-  }
-}
-
 .actions {
   display: none;
 }
 
-@media screen, pagedjs-ignore {
-  main {
-    &:has(.app.show) {
-      margin-left: 0;
-    }
-    &:has(.print.show) {
-      margin-left: -100%;
-    }
-    .app {
-      padding: 3em 25vw;
+main {
+  margin-left: 0;
+  & > .app {
+    display: none;
+  }
+  & > .print-view {
+    display: block;
+
+    .pagedjs_pages {
+      transform: scale(1);
+      transform-origin: 0 0;
     }
   }
+}
 
+@media screen, pagedjs-ignore {
   .actions {
     display: block;
     text-align: center;
@@ -45,6 +37,40 @@ main {
       &.active {
         outline: 2px solid orange;
         cursor: default;
+      }
+    }
+  }
+
+  main {
+    width: 200vw;
+    display: flex;
+
+    &:has(.print-view.show) {
+      margin-left: -100vw;
+    }
+
+    & > .app, & > .print-view {
+      display: block;
+      width: 100vw;
+      box-sizing: border-box;
+    }
+
+    & > .app {
+      padding: 0 10vw;
+    }
+
+    & > .print-view {
+
+      &.scale {
+
+        .pages {
+          width: 795px;
+          margin: 0 auto;
+        }
+
+        .pagedjs_pages {
+          transform: scale(0.5);
+        }
       }
     }
   }
