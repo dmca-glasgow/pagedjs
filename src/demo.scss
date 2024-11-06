@@ -64,13 +64,17 @@ main {
       &.scale {
 
         .pages {
-          width: 795px;
+          width: 815px;
           margin: 0 auto;
         }
 
         .pagedjs_pages {
           transform: scale(0.5);
         }
+      }
+
+      &:not(.scale) {
+        visibility: hidden;
       }
     }
   }

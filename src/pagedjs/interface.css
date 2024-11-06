@@ -1,7 +1,7 @@
 /* CSS for Paged.js interface – v0.4 */
 
 /* Change the look */
-:root {
+/* :root {
   --color-background: whitesmoke;
   --color-pageSheet: #cfcfcf;
   --color-pageBox: violet;
@@ -10,52 +10,44 @@
   --pagedjs-crop-color: black;
   --pagedjs-crop-shadow: white;
   --pagedjs-crop-stroke: 1px;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 14px;
-}
+} */
 
 /* To define how the book look on the screen: */
 @media screen, pagedjs-ignore {
   body {
-      background-color: var(--color-background);
+      background-color: whitesmoke;
   }
 
   .pagedjs_pages {
       display: flex;
-      width: calc(var(--pagedjs-width) * 2);
+      width: calc((var(--pagedjs-width) * 2) + 40px);
       flex: 0;
       flex-wrap: wrap;
       margin: 0 auto 2em;
   }
 
   .pagedjs_page {
-      background-color: var(--color-paper);
-      box-shadow: 0 0 0 1px var(--color-pageSheet);
+      background-color: white;
+      box-shadow: 0 0 0 1px #cfcfcf;
       margin: 0;
       flex-shrink: 0;
       flex-grow: 0;
-      margin-top: 10mm;
+      margin: 10px !important;
   }
 
-  .pagedjs_first_page {
+  /* .pagedjs_first_page {
       margin-left: var(--pagedjs-width);
   }
 
   .pagedjs_page:last-of-type {
       margin-bottom: 10mm;
-  }
+  } */
 
-  .pagedjs_pagebox{
+  /* .pagedjs_pagebox{
       box-shadow: 0 0 0 1px var(--color-pageBox);
-  }
+  } */
 
-  .pagedjs_left_page{
+  /* .pagedjs_left_page{
       z-index: 20;
       width: calc(var(--pagedjs-bleed-left) + var(--pagedjs-pagebox-width))!important;
   }
@@ -72,11 +64,11 @@
       z-index: 10;
       position: relative;
       left: calc(var(--pagedjs-bleed-left)*-1);
-  }
+  } */
 
   /* show the margin-box */
 
-  .pagedjs_margin-top-left-corner-holder,
+  /* .pagedjs_margin-top-left-corner-holder,
   .pagedjs_margin-top,
   .pagedjs_margin-top-left,
   .pagedjs_margin-top-center,
@@ -97,7 +89,7 @@
   .pagedjs_margin-left-middle,
   .pagedjs_margin-left-bottom {
       box-shadow: 0 0 0 1px inset var(--color-marginBox);
-  }
+  } */
 
   /* uncomment this part for recto/verso book : ------------------------------------ */
 
@@ -162,7 +154,7 @@
 
 /* Marks (to delete when merge in paged.js) */
 
-.pagedjs_marks-crop{
+/* .pagedjs_marks-crop{
   z-index: 999999999999;
 
 }
@@ -185,4 +177,4 @@
 .pagedjs_bleed-left .pagedjs_marks-crop:last-child,
 .pagedjs_bleed-right .pagedjs_marks-crop:last-child{
   box-shadow: 0px -1px 0px 0px var(--pagedjs-crop-shadow);
-}
+} */

@@ -14,65 +14,23 @@ const MAX_LAYOUTS = false;
 const TEMPLATE = `
 <div class="pagedjs_page">
 	<div class="pagedjs_sheet">
-		<div class="pagedjs_bleed pagedjs_bleed-top">
-			<div class="pagedjs_marks-crop"></div>
-			<div class="pagedjs_marks-middle">
-				<div class="pagedjs_marks-cross"></div>
-			</div>
-			<div class="pagedjs_marks-crop"></div>
-		</div>
-		<div class="pagedjs_bleed pagedjs_bleed-bottom">
-			<div class="pagedjs_marks-crop"></div>
-			<div class="pagedjs_marks-middle">
-				<div class="pagedjs_marks-cross"></div>
-			</div>		<div class="pagedjs_marks-crop"></div>
-		</div>
-		<div class="pagedjs_bleed pagedjs_bleed-left">
-			<div class="pagedjs_marks-crop"></div>
-			<div class="pagedjs_marks-middle">
-				<div class="pagedjs_marks-cross"></div>
-			</div>		<div class="pagedjs_marks-crop"></div>
-		</div>
-		<div class="pagedjs_bleed pagedjs_bleed-right">
-			<div class="pagedjs_marks-crop"></div>
-			<div class="pagedjs_marks-middle">
-				<div class="pagedjs_marks-cross"></div>
-			</div>
-			<div class="pagedjs_marks-crop"></div>
-		</div>
 		<div class="pagedjs_pagebox">
-			<div class="pagedjs_margin-top-left-corner-holder">
-				<div class="pagedjs_margin pagedjs_margin-top-left-corner"><div class="pagedjs_margin-content"></div></div>
-			</div>
+			<div class="pagedjs_margin-top-left-corner-holder"></div>
 			<div class="pagedjs_margin-top">
-				<div class="pagedjs_margin pagedjs_margin-top-left"><div class="pagedjs_margin-content"></div></div>
-				<div class="pagedjs_margin pagedjs_margin-top-center"><div class="pagedjs_margin-content"></div></div>
-				<div class="pagedjs_margin pagedjs_margin-top-right"><div class="pagedjs_margin-content"></div></div>
+				<div class="pagedjs_margin pagedjs_margin-top-left"></div>
+				<div class="pagedjs_margin pagedjs_margin-top-center"></div>
+				<div class="pagedjs_margin pagedjs_margin-top-right"></div>
 			</div>
-			<div class="pagedjs_margin-top-right-corner-holder">
-				<div class="pagedjs_margin pagedjs_margin-top-right-corner"><div class="pagedjs_margin-content"></div></div>
-			</div>
-			<div class="pagedjs_margin-right">
-				<div class="pagedjs_margin pagedjs_margin-right-top"><div class="pagedjs_margin-content"></div></div>
-				<div class="pagedjs_margin pagedjs_margin-right-middle"><div class="pagedjs_margin-content"></div></div>
-				<div class="pagedjs_margin pagedjs_margin-right-bottom"><div class="pagedjs_margin-content"></div></div>
-			</div>
-			<div class="pagedjs_margin-left">
-				<div class="pagedjs_margin pagedjs_margin-left-top"><div class="pagedjs_margin-content"></div></div>
-				<div class="pagedjs_margin pagedjs_margin-left-middle"><div class="pagedjs_margin-content"></div></div>
-				<div class="pagedjs_margin pagedjs_margin-left-bottom"><div class="pagedjs_margin-content"></div></div>
-			</div>
-			<div class="pagedjs_margin-bottom-left-corner-holder">
-				<div class="pagedjs_margin pagedjs_margin-bottom-left-corner"><div class="pagedjs_margin-content"></div></div>
-			</div>
+			<div class="pagedjs_margin-top-right-corner-holder"></div>
+			<div class="pagedjs_margin-right"></div>
+			<div class="pagedjs_margin-left"></div>
+			<div class="pagedjs_margin-bottom-left-corner-holder"></div>
 			<div class="pagedjs_margin-bottom">
-				<div class="pagedjs_margin pagedjs_margin-bottom-left"><div class="pagedjs_margin-content"></div></div>
-				<div class="pagedjs_margin pagedjs_margin-bottom-center"><div class="pagedjs_margin-content"></div></div>
-				<div class="pagedjs_margin pagedjs_margin-bottom-right"><div class="pagedjs_margin-content"></div></div>
+				<div class="pagedjs_margin pagedjs_margin-bottom-left"></div>
+				<div class="pagedjs_margin pagedjs_margin-bottom-center"></div>
+				<div class="pagedjs_margin pagedjs_margin-bottom-right"></div>
 			</div>
-			<div class="pagedjs_margin-bottom-right-corner-holder">
-				<div class="pagedjs_margin pagedjs_margin-bottom-right-corner"><div class="pagedjs_margin-content"></div></div>
-			</div>
+			<div class="pagedjs_margin-bottom-right-corner-holder"></div>
 			<div class="pagedjs_area">
 				<div class="pagedjs_page_content"></div>
 				<div class="pagedjs_footnote_area">
@@ -156,12 +114,7 @@ class Chunker {
 		this.source = parsed;
 		this.breakToken = undefined;
 
-		if (this.pagesArea && this.pageTemplate) {
-			this.q.clear();
-			this.removePages();
-		} else {
-			this.setup(renderTo);
-		}
+		this.setup(renderTo);
 
 		this.emit("rendering", parsed);
 
@@ -181,8 +134,6 @@ class Chunker {
 		await this.hooks.afterRendered.trigger(this.pages, this);
 
 		this.emit("rendered", this.pages);
-
-
 
 		return this;
 	}
@@ -557,6 +508,11 @@ class Chunker {
 	}
 
 	destroy() {
+    for (let page of this.pages) {
+      page.destroy();
+    }
+    this.pages = []
+    this.total = 0;
 		this.pagesArea.remove();
 		this.pageTemplate.remove();
 	}

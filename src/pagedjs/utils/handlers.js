@@ -1,17 +1,16 @@
-import pagedMediaHandlers from "../modules/paged-media/index.js";
-import generatedContentHandlers from "../modules/generated-content/index.js";
-import filters from "../modules/filters/index.js";
+import Breaks from "../modules/breaks.js";
+import StringSets from "../modules/string-sets.js";
 import EventEmitter from "event-emitter";
 import pipe from "event-emitter/pipe.js";
 
-export let registeredHandlers = [...pagedMediaHandlers, ...generatedContentHandlers, ...filters];
+export let registeredHandlers = [Breaks, StringSets];
 
 export class Handlers {
-	constructor(chunker, polisher, caller) {
+	constructor(chunker, caller) {
 		let handlers = [];
 
 		registeredHandlers.forEach((Handler) => {
-			let handler = new Handler(chunker, polisher, caller);
+			let handler = new Handler(chunker, caller);
 			handlers.push(handler);
 			pipe(handler, this);
 		});
@@ -26,7 +25,7 @@ export function registerHandlers() {
 	}
 }
 
-export function initializeHandlers(chunker, polisher, caller) {
-	let handlers = new Handlers(chunker, polisher, caller);
+export function initializeHandlers(chunker, caller) {
+	let handlers = new Handlers(chunker, caller);
 	return handlers;
 }

@@ -11,9 +11,9 @@ export function cleanPseudoContent(el, trim = "\"' ") {
 		});
 }
 
-export function cleanSelector(el) {
-	if(el == null) return;
-	return el
-		.replace(new RegExp("::footnote-call", "g"), "")
-		.replace(new RegExp("::footnote-marker", "g"), "");
-}
+// export function cleanSelector(el) {
+// 	if(el == null) return;
+// 	return el
+// 		.replace(new RegExp("::footnote-call", "g"), "")
+// 		.replace(new RegExp("::footnote-marker", "g"), "");
+// }

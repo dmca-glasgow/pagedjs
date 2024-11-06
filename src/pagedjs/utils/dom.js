@@ -185,7 +185,7 @@ export function rebuildAncestors(node) {
 	for (var i = 0; i < ancestors.length; i++) {
 		ancestor = ancestors[i];
 		parent = ancestor.cloneNode(false);
-	
+
 		parent.setAttribute("data-split-from", parent.getAttribute("data-ref"));
 		// ancestor.setAttribute("data-split-to", parent.getAttribute("data-ref"));
 
@@ -221,7 +221,7 @@ export function rebuildAncestors(node) {
 				parent.parentElement.insertBefore(sib, prev);
 				prev = sib;
 			}
-			
+
 		}
 	}
 

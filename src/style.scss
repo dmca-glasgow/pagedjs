@@ -1,4 +1,5 @@
 @use "sass:meta";
+@import './pagedjs/base.css';
 @import './pagedjs/interface.css';
 @include meta.load-css('page-header-footer.scss');
 @include meta.load-css('demo.scss');
@@ -8,19 +9,15 @@
     sans-serif;
   font-size: 12pt;
   line-height: 1.4;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
-}
-
-#print {
-  height: 100%;
-}
-
-.pagedjs_margin-content {
-  font-size: 0.8rem;
-  // font-weight: 700;
 }
 
 .pagedjs_page_content > div > *:first-child,

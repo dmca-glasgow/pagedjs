@@ -1,5 +1,5 @@
 // @ts-expect-error
-import Previewer from './pagedjs/polyfill/previewer';
+import { createPreviewer } from './pagedjs';
 
 const app = document.querySelector<HTMLDivElement>('.app');
 const printView = document.querySelector<HTMLDivElement>('.print-view');
@@ -7,18 +7,9 @@ const pages = document.querySelector<HTMLDivElement>('.print-view .pages');
 const webBtn = document.querySelector<HTMLButtonElement>('.web-btn')
 const pagesBtn = document.querySelector<HTMLButtonElement>('.pages-btn')
 const printBtn = document.querySelector<HTMLButtonElement>('.print-btn')
+const refreshBtn = document.querySelector<HTMLButtonElement>('.refresh-btn')
 
-const config = {
-	auto: true,
-	before: undefined,
-	after: undefined,
-	content: app,
-	stylesheets: undefined,
-	renderTo: pages,
-	settings: undefined
-};
-
-const previewer = new Previewer(config.settings);
+const previewer = createPreviewer();
 
 new Promise((resolve) => {
 	if (document.readyState === "interactive" || document.readyState === "complete") {
@@ -30,17 +21,15 @@ new Promise((resolve) => {
 			resolve(document.readyState);
 		}
 	};
-}).then(async function () {
+}).then(addPages);
+
+async function addPages() {
   printView?.classList.remove('scale')
-  const chunker = await previewer.preview(
-    config.content,
-    undefined,
-    config.renderTo
-  );
-  // console.log(chunker.pages)
+  console.log('chunking...')
+  const chunker = await previewer.preview(app, pages);
   console.log(`took: ${(chunker.performance / 1000).toFixed(2)}s`)
   printView?.classList.add('scale')
-});
+}
 
 webBtn?.addEventListener('click', () => {
   webBtn.classList.add('active')
@@ -58,6 +47,11 @@ pagesBtn?.addEventListener('click', () => {
 
 printBtn?.addEventListener('click', () => {
   window.print()
+})
+
+refreshBtn?.addEventListener('click', () => {
+  previewer.destroy();
+  addPages()
 })
 
 // document.addEventListener("keydown", (e) => {
