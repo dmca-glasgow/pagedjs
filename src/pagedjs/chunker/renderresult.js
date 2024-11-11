@@ -4,17 +4,17 @@
  */
 class RenderResult {
 
-	constructor(breakToken, error) {
-		this.breakToken = breakToken;
-		this.error = error;
-	}
+  constructor(breakToken, error) {
+    this.breakToken = breakToken;
+    this.error = error;
+  }
 }
 
 export class OverflowContentError extends Error {
-	constructor(message, items) {
-		super(message);
-		this.items = items;
-	}
+  constructor(message, items) {
+    super(message);
+    this.items = items;
+  }
 }
 
 export default RenderResult;

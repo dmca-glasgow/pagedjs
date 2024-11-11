@@ -1,536 +1,536 @@
 export function isElement(node) {
-	return node && node.nodeType === 1;
+  return node && node.nodeType === 1;
 }
 
 export function isText(node) {
-	return node && node.nodeType === 3;
+  return node && node.nodeType === 3;
 }
 
 export function* walk(start, limiter) {
-	let node = start;
+  let node = start;
 
-	while (node) {
+  while (node) {
 
-		yield node;
+    yield node;
 
-		if (node.childNodes.length) {
-			node = node.firstChild;
-		} else if (node.nextSibling) {
-			if (limiter && node === limiter) {
-				node = undefined;
-				break;
-			}
-			node = node.nextSibling;
-		} else {
-			while (node) {
-				node = node.parentNode;
-				if (limiter && node === limiter) {
-					node = undefined;
-					break;
-				}
-				if (node && node.nextSibling) {
-					node = node.nextSibling;
-					break;
-				}
+    if (node.childNodes.length) {
+      node = node.firstChild;
+    } else if (node.nextSibling) {
+      if (limiter && node === limiter) {
+        node = undefined;
+        break;
+      }
+      node = node.nextSibling;
+    } else {
+      while (node) {
+        node = node.parentNode;
+        if (limiter && node === limiter) {
+          node = undefined;
+          break;
+        }
+        if (node && node.nextSibling) {
+          node = node.nextSibling;
+          break;
+        }
 
-			}
-		}
-	}
+      }
+    }
+  }
 }
 
 export function nodeAfter(node, limiter) {
-	if (limiter && node === limiter) {
-		return;
-	}
-	let significantNode = nextSignificantNode(node);
-	if (significantNode) {
-		return significantNode;
-	}
-	if (node.parentNode) {
-		while ((node = node.parentNode)) {
-			if (limiter && node === limiter) {
-				return;
-			}
-			significantNode = nextSignificantNode(node);
-			if (significantNode) {
-				return significantNode;
-			}
-		}
-	}
+  if (limiter && node === limiter) {
+    return;
+  }
+  let significantNode = nextSignificantNode(node);
+  if (significantNode) {
+    return significantNode;
+  }
+  if (node.parentNode) {
+    while ((node = node.parentNode)) {
+      if (limiter && node === limiter) {
+        return;
+      }
+      significantNode = nextSignificantNode(node);
+      if (significantNode) {
+        return significantNode;
+      }
+    }
+  }
 }
 
 export function nodeBefore(node, limiter) {
-	if (limiter && node === limiter) {
-		return;
-	}
-	let significantNode = previousSignificantNode(node);
-	if (significantNode) {
-		return significantNode;
-	}
-	if (node.parentNode) {
-		while ((node = node.parentNode)) {
-			if (limiter && node === limiter) {
-				return;
-			}
-			significantNode = previousSignificantNode(node);
-			if (significantNode) {
-				return significantNode;
-			}
-		}
-	}
+  if (limiter && node === limiter) {
+    return;
+  }
+  let significantNode = previousSignificantNode(node);
+  if (significantNode) {
+    return significantNode;
+  }
+  if (node.parentNode) {
+    while ((node = node.parentNode)) {
+      if (limiter && node === limiter) {
+        return;
+      }
+      significantNode = previousSignificantNode(node);
+      if (significantNode) {
+        return significantNode;
+      }
+    }
+  }
 }
 
 function elementAfter(node, limiter) {
-	let after = nodeAfter(node, limiter);
+  let after = nodeAfter(node, limiter);
 
-	while (after && after.nodeType !== 1) {
-		after = nodeAfter(after, limiter);
-	}
+  while (after && after.nodeType !== 1) {
+    after = nodeAfter(after, limiter);
+  }
 
-	return after;
+  return after;
 }
 
 function elementBefore(node, limiter) {
-	let before = nodeBefore(node, limiter);
+  let before = nodeBefore(node, limiter);
 
-	while (before && before.nodeType !== 1) {
-		before = nodeBefore(before, limiter);
-	}
+  while (before && before.nodeType !== 1) {
+    before = nodeBefore(before, limiter);
+  }
 
-	return before;
+  return before;
 }
 
 export function displayedElementAfter(node, limiter) {
-	let after = elementAfter(node, limiter);
+  let after = elementAfter(node, limiter);
 
-	while (after && after.dataset.undisplayed) {
-		after = elementAfter(after, limiter);
-	}
+  while (after && after.dataset.undisplayed) {
+    after = elementAfter(after, limiter);
+  }
 
-	return after;
+  return after;
 }
 
 export function displayedElementBefore(node, limiter) {
-	let before = elementBefore(node, limiter);
+  let before = elementBefore(node, limiter);
 
-	while (before && before.dataset.undisplayed) {
-		before = elementBefore(before, limiter);
-	}
+  while (before && before.dataset.undisplayed) {
+    before = elementBefore(before, limiter);
+  }
 
-	return before;
+  return before;
 }
 
 export function rebuildAncestors(node) {
-	let parent, ancestor;
-	let ancestors = [];
-	let added = [];
+  let parent, ancestor;
+  let ancestors = [];
+  let added = [];
 
-	let fragment = document.createDocumentFragment();
+  let fragment = document.createDocumentFragment();
 
-	// Handle rowspan on table
-	if (node.nodeName === "TR") {
-		let previousRow = node.previousElementSibling;
-		let previousRowDistance = 1;
-		while (previousRow) {
-			// previous row has more columns, might indicate a rowspan.
-			if (previousRow.childElementCount > node.childElementCount) {
-				const initialColumns = Array.from(node.children);
-				while (node.firstChild) {
-					node.firstChild.remove();
-				}
-				let k = 0;
-				for (let j = 0; j < previousRow.children.length; j++) {
-					let column = previousRow.children[j];
-					if (column.rowSpan && column.rowSpan > previousRowDistance) {
-						const duplicatedColumn = column.cloneNode(true);
-						// Adjust rowspan value
-						duplicatedColumn.rowSpan = column.rowSpan - previousRowDistance;
-						// Add the column to the row
-						node.appendChild(duplicatedColumn);
-					} else {
-						// Fill the gap with the initial columns (if exists)
-						const initialColumn = initialColumns[k++];
-						// The initial column can be undefined if the newly created table has less columns than the original table
-						if (initialColumn) {
-							node.appendChild(initialColumn);
-						}
-					}
-				}
-			}
-			previousRow = previousRow.previousElementSibling;
-			previousRowDistance++;
-		}
-	}
+  // Handle rowspan on table
+  if (node.nodeName === "TR") {
+    let previousRow = node.previousElementSibling;
+    let previousRowDistance = 1;
+    while (previousRow) {
+      // previous row has more columns, might indicate a rowspan.
+      if (previousRow.childElementCount > node.childElementCount) {
+        const initialColumns = Array.from(node.children);
+        while (node.firstChild) {
+          node.firstChild.remove();
+        }
+        let k = 0;
+        for (let j = 0; j < previousRow.children.length; j++) {
+          let column = previousRow.children[j];
+          if (column.rowSpan && column.rowSpan > previousRowDistance) {
+            const duplicatedColumn = column.cloneNode(true);
+            // Adjust rowspan value
+            duplicatedColumn.rowSpan = column.rowSpan - previousRowDistance;
+            // Add the column to the row
+            node.appendChild(duplicatedColumn);
+          } else {
+            // Fill the gap with the initial columns (if exists)
+            const initialColumn = initialColumns[k++];
+            // The initial column can be undefined if the newly created table has less columns than the original table
+            if (initialColumn) {
+              node.appendChild(initialColumn);
+            }
+          }
+        }
+      }
+      previousRow = previousRow.previousElementSibling;
+      previousRowDistance++;
+    }
+  }
 
-	// Gather all ancestors
-	let element = node;
-	while(element.parentNode && element.parentNode.nodeType === 1) {
-		ancestors.unshift(element.parentNode);
-		element = element.parentNode;
-	}
+  // Gather all ancestors
+  let element = node;
+  while(element.parentNode && element.parentNode.nodeType === 1) {
+    ancestors.unshift(element.parentNode);
+    element = element.parentNode;
+  }
 
-	for (var i = 0; i < ancestors.length; i++) {
-		ancestor = ancestors[i];
-		parent = ancestor.cloneNode(false);
+  for (var i = 0; i < ancestors.length; i++) {
+    ancestor = ancestors[i];
+    parent = ancestor.cloneNode(false);
 
-		parent.setAttribute("data-split-from", parent.getAttribute("data-ref"));
-		// ancestor.setAttribute("data-split-to", parent.getAttribute("data-ref"));
+    parent.setAttribute("data-split-from", parent.getAttribute("data-ref"));
+    // ancestor.setAttribute("data-split-to", parent.getAttribute("data-ref"));
 
-		if (parent.hasAttribute("id")) {
-			let dataID = parent.getAttribute("id");
-			parent.setAttribute("data-id", dataID);
-			parent.removeAttribute("id");
-		}
+    if (parent.hasAttribute("id")) {
+      let dataID = parent.getAttribute("id");
+      parent.setAttribute("data-id", dataID);
+      parent.removeAttribute("id");
+    }
 
-		// This is handled by css :not, but also tidied up here
-		if (parent.hasAttribute("data-break-before")) {
-			parent.removeAttribute("data-break-before");
-		}
+    // This is handled by css :not, but also tidied up here
+    if (parent.hasAttribute("data-break-before")) {
+      parent.removeAttribute("data-break-before");
+    }
 
-		if (parent.hasAttribute("data-previous-break-after")) {
-			parent.removeAttribute("data-previous-break-after");
-		}
+    if (parent.hasAttribute("data-previous-break-after")) {
+      parent.removeAttribute("data-previous-break-after");
+    }
 
-		if (added.length) {
-			let container = added[added.length-1];
-			container.appendChild(parent);
-		} else {
-			fragment.appendChild(parent);
-		}
-		added.push(parent);
+    if (added.length) {
+      let container = added[added.length-1];
+      container.appendChild(parent);
+    } else {
+      fragment.appendChild(parent);
+    }
+    added.push(parent);
 
-		// rebuild table rows
-		if (parent.nodeName === "TD" && ancestor.parentElement.contains(ancestor)) {
-			let td = ancestor;
-			let prev = parent;
-			while ((td = td.previousElementSibling)) {
-				let sib = td.cloneNode(false);
-				parent.parentElement.insertBefore(sib, prev);
-				prev = sib;
-			}
+    // rebuild table rows
+    if (parent.nodeName === "TD" && ancestor.parentElement.contains(ancestor)) {
+      let td = ancestor;
+      let prev = parent;
+      while ((td = td.previousElementSibling)) {
+        let sib = td.cloneNode(false);
+        parent.parentElement.insertBefore(sib, prev);
+        prev = sib;
+      }
 
-		}
-	}
+    }
+  }
 
-	added = undefined;
-	return fragment;
+  added = undefined;
+  return fragment;
 }
 /*
 export function split(bound, cutElement, breakAfter) {
-		let needsRemoval = [];
-		let index = indexOf(cutElement);
+    let needsRemoval = [];
+    let index = indexOf(cutElement);
 
-		if (!breakAfter && index === 0) {
-			return;
-		}
+    if (!breakAfter && index === 0) {
+      return;
+    }
 
-		if (breakAfter && index === (cutElement.parentNode.children.length - 1)) {
-			return;
-		}
+    if (breakAfter && index === (cutElement.parentNode.children.length - 1)) {
+      return;
+    }
 
-		// Create a fragment with rebuilt ancestors
-		let fragment = rebuildAncestors(cutElement);
+    // Create a fragment with rebuilt ancestors
+    let fragment = rebuildAncestors(cutElement);
 
-		// Clone cut
-		if (!breakAfter) {
-			let clone = cutElement.cloneNode(true);
-			let ref = cutElement.parentNode.getAttribute('data-ref');
-			let parent = fragment.querySelector("[data-ref='" + ref + "']");
-			parent.appendChild(clone);
-			needsRemoval.push(cutElement);
-		}
+    // Clone cut
+    if (!breakAfter) {
+      let clone = cutElement.cloneNode(true);
+      let ref = cutElement.parentNode.getAttribute('data-ref');
+      let parent = fragment.querySelector("[data-ref='" + ref + "']");
+      parent.appendChild(clone);
+      needsRemoval.push(cutElement);
+    }
 
-		// Remove all after cut
-		let next = nodeAfter(cutElement, bound);
-		while (next) {
-			let clone = next.cloneNode(true);
-			let ref = next.parentNode.getAttribute('data-ref');
-			let parent = fragment.querySelector("[data-ref='" + ref + "']");
-			parent.appendChild(clone);
-			needsRemoval.push(next);
-			next = nodeAfter(next, bound);
-		}
+    // Remove all after cut
+    let next = nodeAfter(cutElement, bound);
+    while (next) {
+      let clone = next.cloneNode(true);
+      let ref = next.parentNode.getAttribute('data-ref');
+      let parent = fragment.querySelector("[data-ref='" + ref + "']");
+      parent.appendChild(clone);
+      needsRemoval.push(next);
+      next = nodeAfter(next, bound);
+    }
 
-		// Remove originals
-		needsRemoval.forEach((node) => {
-			if (node) {
-				node.remove();
-			}
-		});
+    // Remove originals
+    needsRemoval.forEach((node) => {
+      if (node) {
+        node.remove();
+      }
+    });
 
-		// Insert after bounds
-		bound.parentNode.insertBefore(fragment, bound.nextSibling);
-		return [bound, bound.nextSibling];
+    // Insert after bounds
+    bound.parentNode.insertBefore(fragment, bound.nextSibling);
+    return [bound, bound.nextSibling];
 }
 */
 
 export function needsBreakBefore(node) {
-	if( typeof node !== "undefined" &&
-			typeof node.dataset !== "undefined" &&
-			typeof node.dataset.breakBefore !== "undefined" &&
-			(node.dataset.breakBefore === "always" ||
-			 node.dataset.breakBefore === "page" ||
-			 node.dataset.breakBefore === "left" ||
-			 node.dataset.breakBefore === "right" ||
-			 node.dataset.breakBefore === "recto" ||
-			 node.dataset.breakBefore === "verso")
-		 ) {
-		return true;
-	}
+  if( typeof node !== "undefined" &&
+      typeof node.dataset !== "undefined" &&
+      typeof node.dataset.breakBefore !== "undefined" &&
+      (node.dataset.breakBefore === "always" ||
+       node.dataset.breakBefore === "page" ||
+       node.dataset.breakBefore === "left" ||
+       node.dataset.breakBefore === "right" ||
+       node.dataset.breakBefore === "recto" ||
+       node.dataset.breakBefore === "verso")
+     ) {
+    return true;
+  }
 
-	return false;
+  return false;
 }
 
 export function needsPreviousBreakAfter(node) {
-	if( typeof node !== "undefined" &&
-			typeof node.dataset !== "undefined" &&
-			typeof node.dataset.previousBreakAfter !== "undefined" &&
-			(node.dataset.previousBreakAfter === "always" ||
-			 node.dataset.previousBreakAfter === "page" ||
-			 node.dataset.previousBreakAfter === "left" ||
-			 node.dataset.previousBreakAfter === "right" ||
-			 node.dataset.previousBreakAfter === "recto" ||
-			 node.dataset.previousBreakAfter === "verso")
-		 ) {
-		return true;
-	}
+  if( typeof node !== "undefined" &&
+      typeof node.dataset !== "undefined" &&
+      typeof node.dataset.previousBreakAfter !== "undefined" &&
+      (node.dataset.previousBreakAfter === "always" ||
+       node.dataset.previousBreakAfter === "page" ||
+       node.dataset.previousBreakAfter === "left" ||
+       node.dataset.previousBreakAfter === "right" ||
+       node.dataset.previousBreakAfter === "recto" ||
+       node.dataset.previousBreakAfter === "verso")
+     ) {
+    return true;
+  }
 
-	return false;
+  return false;
 }
 
 export function needsPageBreak(node, previousSignificantNode) {
-	if (typeof node === "undefined" || !previousSignificantNode || isIgnorable(node)) {
-		return false;
-	}
-	if (node.dataset && node.dataset.undisplayed) {
-		return false;
-	}
-	let previousSignificantNodePage = previousSignificantNode.dataset ? previousSignificantNode.dataset.page : undefined;
-	if (typeof previousSignificantNodePage === "undefined") {
-		const nodeWithNamedPage = getNodeWithNamedPage(previousSignificantNode);
-		if (nodeWithNamedPage) {
-			previousSignificantNodePage = nodeWithNamedPage.dataset.page;
-		}
-	}
-	let currentNodePage = node.dataset ? node.dataset.page : undefined;
-	if (typeof currentNodePage === "undefined") {
-		const nodeWithNamedPage = getNodeWithNamedPage(node, previousSignificantNode);
-		if (nodeWithNamedPage) {
-			currentNodePage = nodeWithNamedPage.dataset.page;
-		}
-	}
-	return currentNodePage !== previousSignificantNodePage;
+  if (typeof node === "undefined" || !previousSignificantNode || isIgnorable(node)) {
+    return false;
+  }
+  if (node.dataset && node.dataset.undisplayed) {
+    return false;
+  }
+  let previousSignificantNodePage = previousSignificantNode.dataset ? previousSignificantNode.dataset.page : undefined;
+  if (typeof previousSignificantNodePage === "undefined") {
+    const nodeWithNamedPage = getNodeWithNamedPage(previousSignificantNode);
+    if (nodeWithNamedPage) {
+      previousSignificantNodePage = nodeWithNamedPage.dataset.page;
+    }
+  }
+  let currentNodePage = node.dataset ? node.dataset.page : undefined;
+  if (typeof currentNodePage === "undefined") {
+    const nodeWithNamedPage = getNodeWithNamedPage(node, previousSignificantNode);
+    if (nodeWithNamedPage) {
+      currentNodePage = nodeWithNamedPage.dataset.page;
+    }
+  }
+  return currentNodePage !== previousSignificantNodePage;
 }
 
 export function *words(node) {
-	let currentText = node.nodeValue;
-	let max = currentText.length;
-	let currentOffset = 0;
-	let currentLetter;
+  let currentText = node.nodeValue;
+  let max = currentText.length;
+  let currentOffset = 0;
+  let currentLetter;
 
-	let range;
-	const significantWhitespaces = node.parentElement && node.parentElement.nodeName === "PRE";
+  let range;
+  const significantWhitespaces = node.parentElement && node.parentElement.nodeName === "PRE";
 
-	while (currentOffset < max) {
-		currentLetter = currentText[currentOffset];
-		if (/^[\S\u202F\u00A0]$/.test(currentLetter) || significantWhitespaces) {
-			if (!range) {
-				range = document.createRange();
-				range.setStart(node, currentOffset);
-			}
-		} else {
-			if (range) {
-				range.setEnd(node, currentOffset);
-				yield range;
-				range = undefined;
-			}
-		}
+  while (currentOffset < max) {
+    currentLetter = currentText[currentOffset];
+    if (/^[\S\u202F\u00A0]$/.test(currentLetter) || significantWhitespaces) {
+      if (!range) {
+        range = document.createRange();
+        range.setStart(node, currentOffset);
+      }
+    } else {
+      if (range) {
+        range.setEnd(node, currentOffset);
+        yield range;
+        range = undefined;
+      }
+    }
 
-		currentOffset += 1;
-	}
+    currentOffset += 1;
+  }
 
-	if (range) {
-		range.setEnd(node, currentOffset);
-		yield range;
-	}
+  if (range) {
+    range.setEnd(node, currentOffset);
+    yield range;
+  }
 }
 
 export function *letters(wordRange) {
-	let currentText = wordRange.startContainer;
-	let max = currentText.length;
-	let currentOffset = wordRange.startOffset;
-	// let currentLetter;
+  let currentText = wordRange.startContainer;
+  let max = currentText.length;
+  let currentOffset = wordRange.startOffset;
+  // let currentLetter;
 
-	let range;
+  let range;
 
-	while(currentOffset < max) {
-		 // currentLetter = currentText[currentOffset];
-		 range = document.createRange();
-		 range.setStart(currentText, currentOffset);
-		 range.setEnd(currentText, currentOffset+1);
+  while(currentOffset < max) {
+     // currentLetter = currentText[currentOffset];
+     range = document.createRange();
+     range.setStart(currentText, currentOffset);
+     range.setEnd(currentText, currentOffset+1);
 
-		 yield range;
+     yield range;
 
-		 currentOffset += 1;
-	}
+     currentOffset += 1;
+  }
 }
 
 export function isContainer(node) {
-	let container;
+  let container;
 
-	if (typeof node.tagName === "undefined") {
-		return true;
-	}
+  if (typeof node.tagName === "undefined") {
+    return true;
+  }
 
-	if (node.style && node.style.display === "none") {
-		return false;
-	}
+  if (node.style && node.style.display === "none") {
+    return false;
+  }
 
-	switch (node.tagName) {
-		// Inline
-		case "A":
-		case "ABBR":
-		case "ACRONYM":
-		case "B":
-		case "BDO":
-		case "BIG":
-		case "BR":
-		case "BUTTON":
-		case "CITE":
-		case "CODE":
-		case "DFN":
-		case "EM":
-		case "I":
-		case "IMG":
-		case "INPUT":
-		case "KBD":
-		case "LABEL":
-		case "MAP":
-		case "OBJECT":
-		case "Q":
-		case "SAMP":
-		case "SCRIPT":
-		case "SELECT":
-		case "SMALL":
-		case "SPAN":
-		case "STRONG":
-		case "SUB":
-		case "SUP":
-		case "TEXTAREA":
-		case "TIME":
-		case "TT":
-		case "VAR":
-		case "P":
-		case "H1":
-		case "H2":
-		case "H3":
-		case "H4":
-		case "H5":
-		case "H6":
-		case "FIGCAPTION":
-		case "BLOCKQUOTE":
-		case "PRE":
-		case "LI":
-		case "TD":
-		case "DT":
-		case "DD":
-		case "VIDEO":
-		case "CANVAS":
-			container = false;
-			break;
-		default:
-			container = true;
-	}
+  switch (node.tagName) {
+    // Inline
+    case "A":
+    case "ABBR":
+    case "ACRONYM":
+    case "B":
+    case "BDO":
+    case "BIG":
+    case "BR":
+    case "BUTTON":
+    case "CITE":
+    case "CODE":
+    case "DFN":
+    case "EM":
+    case "I":
+    case "IMG":
+    case "INPUT":
+    case "KBD":
+    case "LABEL":
+    case "MAP":
+    case "OBJECT":
+    case "Q":
+    case "SAMP":
+    case "SCRIPT":
+    case "SELECT":
+    case "SMALL":
+    case "SPAN":
+    case "STRONG":
+    case "SUB":
+    case "SUP":
+    case "TEXTAREA":
+    case "TIME":
+    case "TT":
+    case "VAR":
+    case "P":
+    case "H1":
+    case "H2":
+    case "H3":
+    case "H4":
+    case "H5":
+    case "H6":
+    case "FIGCAPTION":
+    case "BLOCKQUOTE":
+    case "PRE":
+    case "LI":
+    case "TD":
+    case "DT":
+    case "DD":
+    case "VIDEO":
+    case "CANVAS":
+      container = false;
+      break;
+    default:
+      container = true;
+  }
 
-	return container;
+  return container;
 }
 
 export function cloneNode(n, deep=false) {
-	return n.cloneNode(deep);
+  return n.cloneNode(deep);
 }
 
 export function findElement(node, doc, forceQuery) {
-	const ref = node.getAttribute("data-ref");
-	return findRef(ref, doc, forceQuery);
+  const ref = node.getAttribute("data-ref");
+  return findRef(ref, doc, forceQuery);
 }
 
 function findRef(ref, doc, forceQuery) {
-	if (!forceQuery && doc.indexOfRefs && doc.indexOfRefs[ref]) {
-		return doc.indexOfRefs[ref];
-	} else {
-		return doc.querySelector(`[data-ref='${ref}']`);
-	}
+  if (!forceQuery && doc.indexOfRefs && doc.indexOfRefs[ref]) {
+    return doc.indexOfRefs[ref];
+  } else {
+    return doc.querySelector(`[data-ref='${ref}']`);
+  }
 }
 
 export function validNode(node) {
-	if (isText(node)) {
-		return true;
-	}
+  if (isText(node)) {
+    return true;
+  }
 
-	if (isElement(node) && node.dataset.ref) {
-		return true;
-	}
+  if (isElement(node) && node.dataset.ref) {
+    return true;
+  }
 
-	return false;
+  return false;
 }
 
 export function prevValidNode(node) {
-	while (!validNode(node)) {
-		if (node.previousSibling) {
-			node = node.previousSibling;
-		} else {
-			node = node.parentNode;
-		}
+  while (!validNode(node)) {
+    if (node.previousSibling) {
+      node = node.previousSibling;
+    } else {
+      node = node.parentNode;
+    }
 
-		if (!node) {
-			break;
-		}
-	}
+    if (!node) {
+      break;
+    }
+  }
 
-	return node;
+  return node;
 }
 
 export function indexOf(node) {
-	let parent = node.parentNode;
-	if (!parent) {
-		return 0;
-	}
-	return Array.prototype.indexOf.call(parent.childNodes, node);
+  let parent = node.parentNode;
+  if (!parent) {
+    return 0;
+  }
+  return Array.prototype.indexOf.call(parent.childNodes, node);
 }
 
 export function child(node, index) {
-	return node.childNodes[index];
+  return node.childNodes[index];
 }
 
 export function hasContent(node) {
-	if (isElement(node)) {
-		return true;
-	} else if (isText(node) &&
-			node.textContent.trim().length) {
-		return true;
-	}
-	return false;
+  if (isElement(node)) {
+    return true;
+  } else if (isText(node) &&
+      node.textContent.trim().length) {
+    return true;
+  }
+  return false;
 }
 
 export function indexOfTextNode(node, parent) {
-	if (!isText(node)) {
-		return -1;
-	}
-	let nodeTextContent = node.textContent;
-	let child;
-	let index = -1;
-	for (var i = 0; i < parent.childNodes.length; i++) {
-		child = parent.childNodes[i];
-		if (child.nodeType === 3) {
-			let text = parent.childNodes[i].textContent;
-			if (text.includes(nodeTextContent)) {
-				index = i;
-				break;
-			}
-		}
-	}
+  if (!isText(node)) {
+    return -1;
+  }
+  let nodeTextContent = node.textContent;
+  let child;
+  let index = -1;
+  for (var i = 0; i < parent.childNodes.length; i++) {
+    child = parent.childNodes[i];
+    if (child.nodeType === 3) {
+      let text = parent.childNodes[i].textContent;
+      if (text.includes(nodeTextContent)) {
+        index = i;
+        break;
+      }
+    }
+  }
 
-	return index;
+  return index;
 }
 
 
@@ -556,8 +556,8 @@ export function indexOfTextNode(node, parent) {
  *  and otherwise false.
  */
 function isIgnorable(node) {
-	return (node.nodeType === 8) || // A comment node
-		((node.nodeType === 3) && isAllWhitespace(node)); // a text node, all whitespace
+  return (node.nodeType === 8) || // A comment node
+    ((node.nodeType === 3) && isAllWhitespace(node)); // a text node, all whitespace
 }
 
 /**
@@ -567,7 +567,7 @@ function isIgnorable(node) {
  * @return {boolean} true if all of the text content of |nod| is whitespace, otherwise false.
  */
 function isAllWhitespace(node) {
-	return !(/[^\t\n\r ]/.test(node.textContent));
+  return !(/[^\t\n\r ]/.test(node.textContent));
 }
 
 /**
@@ -583,36 +583,36 @@ function isAllWhitespace(node) {
  *  2) null if no such node exists.
  */
 function previousSignificantNode(sib) {
-	while ((sib = sib.previousSibling)) {
-		if (!isIgnorable(sib)) return sib;
-	}
-	return null;
+  while ((sib = sib.previousSibling)) {
+    if (!isIgnorable(sib)) return sib;
+  }
+  return null;
 }
 
 function getNodeWithNamedPage(node, limiter) {
-	if (node && node.dataset && node.dataset.page) {
-		return node;
-	}
-	if (node.parentNode) {
-		while ((node = node.parentNode)) {
-			if (limiter && node === limiter) {
-				return;
-			}
-			if (node.dataset && node.dataset.page) {
-				return node;
-			}
-		}
-	}
-	return null;
+  if (node && node.dataset && node.dataset.page) {
+    return node;
+  }
+  if (node.parentNode) {
+    while ((node = node.parentNode)) {
+      if (limiter && node === limiter) {
+        return;
+      }
+      if (node.dataset && node.dataset.page) {
+        return node;
+      }
+    }
+  }
+  return null;
 }
 
 export function breakInsideAvoidParentNode(node) {
-	while ((node = node.parentNode)) {
-		if (node && node.dataset && node.dataset.breakInside === "avoid") {
-			return node;
-		}
-	}
-	return null;
+  while ((node = node.parentNode)) {
+    if (node && node.dataset && node.dataset.breakInside === "avoid") {
+      return node;
+    }
+  }
+  return null;
 }
 
 /**
@@ -625,19 +625,19 @@ export function breakInsideAvoidParentNode(node) {
  *  2) undefined if no such node exists.
  */
 export function parentOf(node, nodeName, limiter) {
-	if (limiter && node === limiter) {
-		return;
-	}
-	if (node.parentNode) {
-		while ((node = node.parentNode)) {
-			if (limiter && node === limiter) {
-				return;
-			}
-			if (node.nodeName === nodeName) {
-				return node;
-			}
-		}
-	}
+  if (limiter && node === limiter) {
+    return;
+  }
+  if (node.parentNode) {
+    while ((node = node.parentNode)) {
+      if (limiter && node === limiter) {
+        return;
+      }
+      if (node.nodeName === nodeName) {
+        return node;
+      }
+    }
+  }
 }
 
 /**
@@ -650,8 +650,8 @@ export function parentOf(node, nodeName, limiter) {
  *  2) null if no such node exists.
  */
 function nextSignificantNode(sib) {
-	while ((sib = sib.nextSibling)) {
-		if (!isIgnorable(sib)) return sib;
-	}
-	return null;
+  while ((sib = sib.nextSibling)) {
+    if (!isIgnorable(sib)) return sib;
+  }
+  return null;
 }

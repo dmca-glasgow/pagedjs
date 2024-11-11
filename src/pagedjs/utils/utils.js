@@ -1,31 +1,31 @@
 export function getBoundingClientRect(element) {
-	if (!element) {
-		return;
-	}
-	let rect;
-	if (typeof element.getBoundingClientRect !== "undefined") {
-		rect = element.getBoundingClientRect();
-	} else {
-		let range = document.createRange();
-		range.selectNode(element);
-		rect = range.getBoundingClientRect();
-	}
-	return rect;
+  if (!element) {
+    return;
+  }
+  let rect;
+  if (typeof element.getBoundingClientRect !== "undefined") {
+    rect = element.getBoundingClientRect();
+  } else {
+    let range = document.createRange();
+    range.selectNode(element);
+    rect = range.getBoundingClientRect();
+  }
+  return rect;
 }
 
 export function getClientRects(element) {
-	if (!element) {
-		return;
-	}
-	let rect;
-	if (typeof element.getClientRects !== "undefined") {
-		rect = element.getClientRects();
-	} else {
-		let range = document.createRange();
-		range.selectNode(element);
-		rect = range.getClientRects();
-	}
-	return rect;
+  if (!element) {
+    return;
+  }
+  let rect;
+  if (typeof element.getClientRects !== "undefined") {
+    rect = element.getClientRects();
+  } else {
+    let range = document.createRange();
+    range.selectNode(element);
+    rect = range.getClientRects();
+  }
+  return rect;
 }
 
 /**
@@ -34,15 +34,15 @@ export function getClientRects(element) {
  * @returns {string} uuid
  */
 export function UUID() {
-	var d = new Date().getTime();
-	if (typeof performance !== "undefined" && typeof performance.now === "function") {
-		d += performance.now(); //use high-precision timer if available
-	}
-	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-		var r = (d + Math.random() * 16) % 16 | 0;
-		d = Math.floor(d / 16);
-		return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
-	});
+  var d = new Date().getTime();
+  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+    d += performance.now(); //use high-precision timer if available
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (d + Math.random() * 16) % 16 | 0;
+    d = Math.floor(d / 16);
+    return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+  });
 }
 
 // From: https://hg.mozilla.org/mozilla-central/file/tip/toolkit/modules/css-selector.js#l52
@@ -54,12 +54,12 @@ export function UUID() {
  * @returns {int} an index of the match, or -1 if there is no match
  */
 function positionInNodeList(element, nodeList) {
-	for (let i = 0; i < nodeList.length; i++) {
-		if (element === nodeList[i]) {
-			return i;
-		}
-	}
-	return -1;
+  for (let i = 0; i < nodeList.length; i++) {
+    if (element === nodeList[i]) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 /**
@@ -68,15 +68,15 @@ function positionInNodeList(element, nodeList) {
  * @returns {object} defered
  */
 export function defer() {
-	this.resolve = null;
+  this.resolve = null;
 
-	this.reject = null;
+  this.reject = null;
 
-	this.id = UUID();
+  this.id = UUID();
 
-	this.promise = new Promise((resolve, reject) => {
-		this.resolve = resolve;
-		this.reject = reject;
-	});
-	Object.freeze(this);
+  this.promise = new Promise((resolve, reject) => {
+    this.resolve = resolve;
+    this.reject = reject;
+  });
+  Object.freeze(this);
 }
