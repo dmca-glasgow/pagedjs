@@ -1,0 +1,42 @@
+@use "sass:meta";
+@include meta.load-css('content.scss');
+@include meta.load-css('actions.scss');
+
+@import '../pagedjs/pagedjs.css';
+@include meta.load-css('pages.scss');
+
+@media print {
+  main:has(.pagedjs_pages) {
+    margin-left: 0;
+    & > .app {
+      display: none;
+    }
+    & > .print-view {
+      display: block;
+    }
+  }
+}
+
+@media screen {
+  body {
+    overflow-x: hidden;
+  }
+  main {
+    width: 200vw;
+    display: flex;
+
+    &:has(.print-view.show) {
+      margin-left: -100vw;
+    }
+
+    & > .app, & > .print-view {
+      display: block;
+      width: 100vw;
+      box-sizing: border-box;
+    }
+
+    & > .app {
+      padding: 0 10vw;
+    }
+  }
+}

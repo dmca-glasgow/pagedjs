@@ -1,0 +1,63 @@
+@media print {
+  .actions {
+    display: none;
+  }
+}
+
+@media screen {
+  .actions {
+    font-family: system-ui, sans-serif;
+    font-weight: normal;
+    display: block;
+    text-align: center;
+    padding: 1em 0;
+
+    button {
+      border: 0;
+      padding: 0.2em 1em;
+      background: #ccc;
+      border-radius: 3px;
+      margin: 0 0.2em;
+      cursor: pointer;
+
+      &.active {
+        outline: 2px solid orange;
+        cursor: default;
+      }
+
+      &.loading {
+        cursor: default;
+        pointer-events: none;
+        padding-right: 0.6em;
+
+        &::after {
+          content: '';
+          width: 12px;
+          height: 12px;
+          border: 2px solid #FFF;
+          margin-left: 0.3em;
+          border-bottom-color: transparent;
+          border-radius: 50%;
+          display: inline-block;
+          box-sizing: border-box;
+          animation: rotation 1s linear infinite;
+          position: relative;
+          top: 0.1em;
+        }
+      }
+    }
+
+    label {
+      vertical-align: middle;
+    }
+
+    @keyframes rotation {
+      0% {
+          transform: rotate(0deg);
+      }
+      100% {
+          transform: rotate(360deg);
+      }
+    }
+  }
+}

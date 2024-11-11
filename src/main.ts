@@ -1,71 +1,63 @@
-// @ts-expect-error
-import { createPreviewer } from './pagedjs';
+import * as elem from './elements'
+import { destroyPages, renderPages, waitForRender } from './pages';
+import { Size } from './config/paper';
+import { config } from './config';
 
-const app = document.querySelector<HTMLDivElement>('.app');
-const printView = document.querySelector<HTMLDivElement>('.print-view');
-const pages = document.querySelector<HTMLDivElement>('.print-view .pages');
-const webBtn = document.querySelector<HTMLButtonElement>('.web-btn')
-const pagesBtn = document.querySelector<HTMLButtonElement>('.pages-btn')
-const printBtn = document.querySelector<HTMLButtonElement>('.print-btn')
-const refreshBtn = document.querySelector<HTMLButtonElement>('.refresh-btn')
+renderPages()
 
-const previewer = createPreviewer();
-
-new Promise((resolve) => {
-	if (document.readyState === "interactive" || document.readyState === "complete") {
-		resolve(document.readyState);
-		return;
-	}
-	document.onreadystatechange = () => {
-		if (document.readyState === "interactive") {
-			resolve(document.readyState);
-		}
-	};
-}).then(addPages);
-
-async function addPages() {
-  printView?.classList.remove('scale')
-  console.log('chunking...')
-  const chunker = await previewer.preview(app, pages);
-  console.log(`took: ${(chunker.performance / 1000).toFixed(2)}s`)
-  printView?.classList.add('scale')
-}
-
-webBtn?.addEventListener('click', () => {
-  webBtn.classList.add('active')
-  pagesBtn?.classList.remove('active')
-  app?.classList.add('show')
-  printView?.classList.remove('show')
+elem.webBtn?.addEventListener('click', () => {
+  elem.webBtn?.classList.add('active')
+  elem.pagesBtn?.classList.remove('active')
+  elem.app?.classList.add('show')
+  elem.printView?.classList.remove('show')
 })
 
-pagesBtn?.addEventListener('click', () => {
-  pagesBtn.classList.add('active')
-  webBtn?.classList.remove('active')
-  printView?.classList.add('show')
-  app?.classList.remove('show')
+elem.pagesBtn?.addEventListener('click', () => {
+  elem.pagesBtn?.classList.add('active')
+  elem.webBtn?.classList.remove('active')
+  elem.printView?.classList.add('show')
+  elem.app?.classList.remove('show')
 })
 
-printBtn?.addEventListener('click', () => {
+elem.layoutSelect?.addEventListener('change', (e) => {
+  if (e.target instanceof HTMLSelectElement) {
+    const view = e.target.value
+    if (view === 'Single') {
+      elem.pages?.classList.remove('double')
+    }
+    if (view === 'Double') {
+      elem.pages?.classList.add('double')
+    }
+  }
+})
+
+elem.paperSelect?.addEventListener('change', (e) => {
+  if (e.target instanceof HTMLSelectElement) {
+    const size = e.target.value as Size;
+    config.paper.selectedSize = size;
+    renderPages()
+  }
+})
+
+elem.pagesEnabled?.addEventListener('change', (e) => {
+  if (e.target instanceof HTMLInputElement) {
+    if (e.target.checked) {
+      renderPages()
+    } else {
+      destroyPages()
+    }
+  }
+})
+
+elem.printBtn?.addEventListener('click', async () => {
+  await waitForRender()
   window.print()
 })
 
-refreshBtn?.addEventListener('click', () => {
-  previewer.destroy();
-  addPages()
-})
-
-// document.addEventListener("keydown", (e) => {
-//   if (e.metaKey && e.key === 'p') {
-//     e.preventDefault()
-//     console.log('print request')
-//     window.print()
-//   }
-// });
-
-// window.addEventListener("beforeprint", () => {
-//   console.log('beforeprint')
-// });
-
-// window.addEventListener("afterprint", () => {
-//   console.log('afterprint')
-// });
+document.addEventListener("keydown", async (e) => {
+  if (e.metaKey && e.key === 'p') {
+    e.preventDefault()
+    await waitForRender()
+    window.print()
+  }
+});
