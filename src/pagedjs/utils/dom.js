@@ -80,7 +80,7 @@ export function nodeBefore(node, limiter) {
 	}
 }
 
-export function elementAfter(node, limiter) {
+function elementAfter(node, limiter) {
 	let after = nodeAfter(node, limiter);
 
 	while (after && after.nodeType !== 1) {
@@ -90,7 +90,7 @@ export function elementAfter(node, limiter) {
 	return after;
 }
 
-export function elementBefore(node, limiter) {
+function elementBefore(node, limiter) {
 	let before = nodeBefore(node, limiter);
 
 	while (before && before.nodeType !== 1) {
@@ -118,19 +118,6 @@ export function displayedElementBefore(node, limiter) {
 	}
 
 	return before;
-}
-
-export function stackChildren(currentNode, stacked) {
-	let stack = stacked || [];
-
-	stack.unshift(currentNode);
-
-	let children = currentNode.children;
-	for (var i = 0, length = children.length; i < length; i++) {
-		stackChildren(children[i], stack);
-	}
-
-	return stack;
 }
 
 export function rebuildAncestors(node) {
@@ -185,7 +172,7 @@ export function rebuildAncestors(node) {
 	for (var i = 0; i < ancestors.length; i++) {
 		ancestor = ancestors[i];
 		parent = ancestor.cloneNode(false);
-	
+
 		parent.setAttribute("data-split-from", parent.getAttribute("data-ref"));
 		// ancestor.setAttribute("data-split-to", parent.getAttribute("data-ref"));
 
@@ -221,7 +208,7 @@ export function rebuildAncestors(node) {
 				parent.parentElement.insertBefore(sib, prev);
 				prev = sib;
 			}
-			
+
 		}
 	}
 
@@ -287,23 +274,6 @@ export function needsBreakBefore(node) {
 			 node.dataset.breakBefore === "right" ||
 			 node.dataset.breakBefore === "recto" ||
 			 node.dataset.breakBefore === "verso")
-		 ) {
-		return true;
-	}
-
-	return false;
-}
-
-export function needsBreakAfter(node) {
-	if( typeof node !== "undefined" &&
-			typeof node.dataset !== "undefined" &&
-			typeof node.dataset.breakAfter !== "undefined" &&
-			(node.dataset.breakAfter === "always" ||
-			 node.dataset.breakAfter === "page" ||
-			 node.dataset.breakAfter === "left" ||
-			 node.dataset.breakAfter === "right" ||
-			 node.dataset.breakAfter === "recto" ||
-			 node.dataset.breakAfter === "verso")
 		 ) {
 		return true;
 	}
@@ -484,7 +454,7 @@ export function findElement(node, doc, forceQuery) {
 	return findRef(ref, doc, forceQuery);
 }
 
-export function findRef(ref, doc, forceQuery) {
+function findRef(ref, doc, forceQuery) {
 	if (!forceQuery && doc.indexOfRefs && doc.indexOfRefs[ref]) {
 		return doc.indexOfRefs[ref];
 	} else {
@@ -520,23 +490,6 @@ export function prevValidNode(node) {
 	return node;
 }
 
-export function nextValidNode(node) {
-	while (!validNode(node)) {
-		if (node.nextSibling) {
-			node = node.nextSibling;
-		} else {
-			node = node.parentNode.nextSibling;
-		}
-
-		if (!node) {
-			break;
-		}
-	}
-
-	return node;
-}
-
-
 export function indexOf(node) {
 	let parent = node.parentNode;
 	if (!parent) {
@@ -549,36 +502,9 @@ export function child(node, index) {
 	return node.childNodes[index];
 }
 
-export function isVisible(node) {
-	if (isElement(node) && window.getComputedStyle(node).display !== "none") {
-		return true;
-	} else if (isText(node) &&
-			hasTextContent(node) &&
-			window.getComputedStyle(node.parentNode).display !== "none") {
-		return true;
-	}
-	return false;
-}
-
 export function hasContent(node) {
 	if (isElement(node)) {
 		return true;
-	} else if (isText(node) &&
-			node.textContent.trim().length) {
-		return true;
-	}
-	return false;
-}
-
-export function hasTextContent(node) {
-	if (isElement(node)) {
-		let child;
-		for (var i = 0; i < node.childNodes.length; i++) {
-			child = node.childNodes[i];
-			if (child && isText(child) && child.textContent.trim().length) {
-				return true;
-			}
-		}
 	} else if (isText(node) &&
 			node.textContent.trim().length) {
 		return true;
@@ -629,7 +555,7 @@ export function indexOfTextNode(node, parent) {
  *  2) A |Comment| node
  *  and otherwise false.
  */
-export function isIgnorable(node) {
+function isIgnorable(node) {
 	return (node.nodeType === 8) || // A comment node
 		((node.nodeType === 3) && isAllWhitespace(node)); // a text node, all whitespace
 }
@@ -640,7 +566,7 @@ export function isIgnorable(node) {
  * @param {Node} node  A node implementing the |CharacterData| interface (i.e., a |Text|, |Comment|, or |CDATASection| node
  * @return {boolean} true if all of the text content of |nod| is whitespace, otherwise false.
  */
-export function isAllWhitespace(node) {
+function isAllWhitespace(node) {
 	return !(/[^\t\n\r ]/.test(node.textContent));
 }
 
@@ -656,7 +582,7 @@ export function isAllWhitespace(node) {
  *  1) The closest previous sibling to |sib| that is not ignorable according to |is_ignorable|, or
  *  2) null if no such node exists.
  */
-export function previousSignificantNode(sib) {
+function previousSignificantNode(sib) {
 	while ((sib = sib.previousSibling)) {
 		if (!isIgnorable(sib)) return sib;
 	}
@@ -723,27 +649,9 @@ export function parentOf(node, nodeName, limiter) {
  *  1) The closest next sibling to |sib| that is not ignorable according to |is_ignorable|, or
  *  2) null if no such node exists.
  */
-export function nextSignificantNode(sib) {
+function nextSignificantNode(sib) {
 	while ((sib = sib.nextSibling)) {
 		if (!isIgnorable(sib)) return sib;
 	}
 	return null;
-}
-
-export function filterTree(content, func, what) {
-	const treeWalker = document.createTreeWalker(
-		content || this.dom,
-		what || NodeFilter.SHOW_ALL,
-		func ? { acceptNode: func } : null,
-		false
-	);
-
-	let node;
-	let current;
-	node = treeWalker.nextNode();
-	while(node) {
-		current = node;
-		node = treeWalker.nextNode();
-		current.parentNode.removeChild(current);
-	}
 }

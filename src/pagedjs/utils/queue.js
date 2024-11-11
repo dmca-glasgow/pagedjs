@@ -205,43 +205,4 @@ class Queue {
 	}
 }
 
-
-/**
- * Create a new task from a callback
- * @class
- * @private
- * @param {function} task task to complete
- * @param {array} args arguments for the task
- * @param {scope} context scope of the task
- * @return {function} task
- */
-class Task {
-	constructor(task, args, context){
-
-		return function(){
-			var toApply = arguments || [];
-
-			return new Promise( (resolve, reject) => {
-				var callback = function(value, err){
-					if (!value && err) {
-						reject(err);
-					} else {
-						resolve(value);
-					}
-				};
-				// Add the callback to the arguments list
-				toApply.push(callback);
-
-				// Apply all arguments to the functions
-				task.apply(context || this, toApply);
-
-			});
-
-		};
-
-	}
-}
-
-
 export default Queue;
-export { Task };

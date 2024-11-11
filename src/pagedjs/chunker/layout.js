@@ -25,8 +25,6 @@ import {
 } from "../utils/dom.js";
 import BreakToken from "./breaktoken.js";
 import RenderResult, { OverflowContentError } from "./renderresult.js";
-import EventEmitter from "event-emitter";
-import Hook from "../utils/hook.js";
 
 const MAX_CHARS_PER_BREAK = 1500;
 
@@ -34,40 +32,23 @@ const MAX_CHARS_PER_BREAK = 1500;
  * Layout
  * @class
  */
-class Layout {
+export default class Layout {
 
-	constructor(element, hooks, options) {
+	constructor(element, maxChars) {
 		this.element = element;
 
 		this.bounds = this.element.getBoundingClientRect();
 		this.parentBounds = this.element.offsetParent.getBoundingClientRect();
 		let gap = parseFloat(window.getComputedStyle(this.element).columnGap);
-	
+
 		if (gap) {
 			let leftMargin = this.bounds.left - this.parentBounds.left;
-			this.gap =  gap - leftMargin;	
+			this.gap =  gap - leftMargin;
 		} else {
 			this.gap = 0;
 		}
 
-		if (hooks) {
-			this.hooks = hooks;
-		} else {
-			this.hooks = {};
-			this.hooks.onPageLayout = new Hook();
-			this.hooks.layout = new Hook();
-			this.hooks.renderNode = new Hook();
-			this.hooks.layoutNode = new Hook();
-			this.hooks.beforeOverflow = new Hook();
-			this.hooks.onOverflow = new Hook();
-			this.hooks.afterOverflowRemoved = new Hook();
-			this.hooks.onBreakToken = new Hook();
-			this.hooks.beforeRenderResult = new Hook();
-		}
-
-		this.settings = options || {};
-
-		this.maxChars = this.settings.maxChars || MAX_CHARS_PER_BREAK;
+		this.maxChars = maxChars || MAX_CHARS_PER_BREAK;
 		this.forceRenderBreak = false;
 	}
 
@@ -87,8 +68,6 @@ class Layout {
 
 		let prevBreakToken = breakToken || new BreakToken(start);
 
-		this.hooks && this.hooks.onPageLayout.trigger(wrapper, prevBreakToken, this);
-
 		while (!done && !newBreakToken) {
 			next = walker.next();
 			prevNode = node;
@@ -96,8 +75,6 @@ class Layout {
 			done = next.done;
 
 			if (!node) {
-				this.hooks && this.hooks.layout.trigger(wrapper, this);
-
 				let imgs = wrapper.querySelectorAll("img");
 				if (imgs.length) {
 					await this.waitForImages(imgs);
@@ -107,22 +84,15 @@ class Layout {
 
 				if (newBreakToken && newBreakToken.equals(prevBreakToken)) {
 					console.warn("Unable to layout item: ", prevNode);
-					this.hooks && this.hooks.beforeRenderResult.trigger(undefined, wrapper, this);
 					return new RenderResult(undefined, new OverflowContentError("Unable to layout item", [prevNode]));
 				}
 
 				this.rebuildTableFromBreakToken(newBreakToken, wrapper);
 
-				this.hooks && this.hooks.beforeRenderResult.trigger(newBreakToken, wrapper, this);
 				return new RenderResult(newBreakToken);
 			}
-
-			this.hooks && this.hooks.layoutNode.trigger(node);
-
 			// Check if the rendered element has a break set
 			if (hasRenderedContent && this.shouldBreak(node, start)) {
-				this.hooks && this.hooks.layout.trigger(wrapper, this);
-
 				let imgs = wrapper.querySelectorAll("img");
 				if (imgs.length) {
 					await this.waitForImages(imgs);
@@ -166,6 +136,7 @@ class Layout {
 			let shallow = isContainer(node);
 
 			let rendered = this.append(node, wrapper, breakToken, shallow);
+      // console.log(rendered)
 
 			length += rendered.textContent.length;
 
@@ -180,8 +151,6 @@ class Layout {
 			}
 
 			if (this.forceRenderBreak) {
-				this.hooks && this.hooks.layout.trigger(wrapper, this);
-
 				newBreakToken = this.findBreakToken(wrapper, source, bounds, prevBreakToken);
 
 				if (!newBreakToken) {
@@ -198,9 +167,6 @@ class Layout {
 
 			// Only check x characters
 			if (length >= this.maxChars) {
-
-				this.hooks && this.hooks.layout.trigger(wrapper, this);
-
 				let imgs = wrapper.querySelectorAll("img");
 				if (imgs.length) {
 					await this.waitForImages(imgs);
@@ -219,31 +185,20 @@ class Layout {
 					if (after) {
 						newBreakToken = new BreakToken(after);
 					} else {
-						this.hooks && this.hooks.beforeRenderResult.trigger(undefined, wrapper, this);
 						return new RenderResult(undefined, new OverflowContentError("Unable to layout item", [node]));
 					}
 				}
 			}
-
 		}
 
-		this.hooks && this.hooks.beforeRenderResult.trigger(newBreakToken, wrapper, this);
 		return new RenderResult(newBreakToken);
 	}
 
 	breakAt(node, offset = 0) {
-		let newBreakToken = new BreakToken(
+		return new BreakToken(
 			node,
 			offset
 		);
-		let breakHooks = this.hooks.onBreakToken.triggerSync(newBreakToken, undefined, node, this);
-		breakHooks.forEach((newToken) => {
-			if (typeof newToken != "undefined") {
-				newBreakToken = newToken;
-			}
-		});
-
-		return newBreakToken;
 	}
 
 	shouldBreak(node, limiter) {
@@ -313,13 +268,6 @@ class Layout {
 			}
 			dest.indexOfRefs[clone.dataset.ref] = clone;
 		}
-
-		let nodeHooks = this.hooks.renderNode.triggerSync(clone, node, this);
-		nodeHooks.forEach((newNode) => {
-			if (typeof newNode != "undefined") {
-				clone = newNode;
-			}
-		});
 
 		return clone;
 	}
@@ -481,22 +429,8 @@ class Layout {
 		let overflow = this.findOverflow(rendered, bounds);
 		let breakToken, breakLetter;
 
-		let overflowHooks = this.hooks.onOverflow.triggerSync(overflow, rendered, bounds, this);
-		overflowHooks.forEach((newOverflow) => {
-			if (typeof newOverflow != "undefined") {
-				overflow = newOverflow;
-			}
-		});
-
 		if (overflow) {
 			breakToken = this.createBreakToken(overflow, rendered, source);
-			// breakToken is nullable
-			let breakHooks = this.hooks.onBreakToken.triggerSync(breakToken, overflow, rendered, this);
-			breakHooks.forEach((newToken) => {
-				if (typeof newToken != "undefined") {
-					breakToken = newToken;
-				}
-			});
 
 			// Stop removal if we are in a loop
 			if (breakToken && breakToken.equals(prevBreakToken)) {
@@ -510,8 +444,7 @@ class Layout {
 			}
 
 			if (breakToken && breakToken.node && extract) {
-				let removed = this.removeOverflow(overflow, breakLetter);
-				this.hooks && this.hooks.afterOverflowRemoved.trigger(removed, rendered, this);
+				this.removeOverflow(overflow, breakLetter);
 			}
 
 		}
@@ -809,7 +742,7 @@ class Layout {
 				(!breakLetter && /^\w|\u00AD$/.test(prevLetter))
 			) {
 				startContainer.parentNode.classList.add("pagedjs_hyphen");
-				startContainer.textContent += this.settings.hyphenGlyph || "\u2011";
+				startContainer.textContent += "\u2011";
 			}
 		}
 	}
@@ -827,7 +760,3 @@ class Layout {
 		return true;
 	}
 }
-
-EventEmitter(Layout.prototype);
-
-export default Layout;

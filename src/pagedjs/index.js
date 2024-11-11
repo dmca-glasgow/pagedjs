@@ -1,19 +1,17 @@
 import Chunker from "./chunker/chunker.js";
-import Polisher from "./polisher/polisher.js";
-import Previewer from "./polyfill/previewer.js";
-import Handler from "./modules/handler.js";
-import {
-	registeredHandlers,
-	registerHandlers,
-	initializeHandlers
-} from "./utils/handlers.js";
 
-export {
-	Chunker,
-	Polisher,
-	Previewer,
-	Handler,
-	registeredHandlers,
-	registerHandlers,
-	initializeHandlers
-};
+export async function chunker(content, renderTo, config) {
+  const startTime = performance.now();
+  const chunker = new Chunker(config);
+  const fragment = fragmentFromString(content);
+  const flow = await chunker.flow(fragment, renderTo);
+  const endTime = performance.now();
+  flow.performance = (endTime - startTime);
+  return flow;
+}
+
+function fragmentFromString(content) {
+  const template = document.createElement("template");
+  template.innerHTML = content.innerHTML;
+  return template.content;
+}

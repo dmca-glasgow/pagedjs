@@ -1,57 +1,63 @@
-// @ts-expect-error
-import Previewer from './pagedjs/polyfill/previewer';
+import * as elem from './elements'
+import { destroyPages, renderPages, waitForRender } from './pages';
+import { Size } from './config/paper';
+import { config } from './config';
 
-const app = document.querySelector<HTMLDivElement>('.app');
-const print = document.querySelector<HTMLDivElement>('.print');
-const webBtn = document.querySelector<HTMLButtonElement>('.web-btn')
-const printBtn = document.querySelector<HTMLButtonElement>('.print-btn')
+renderPages()
 
-const config = {
-	auto: true,
-	before: undefined,
-	after: undefined,
-	content: app,
-	stylesheets: undefined,
-	renderTo: print,
-	settings: undefined
-};
-
-const previewer = new Previewer(config.settings);
-
-new Promise((resolve) => {
-	if (document.readyState === "interactive" || document.readyState === "complete") {
-		resolve(document.readyState);
-		return;
-	}
-	document.onreadystatechange = () => {
-		if (document.readyState === "interactive") {
-			resolve(document.readyState);
-		}
-	};
-}).then(async function () {
-  const chunker = await previewer.preview(
-    config.content,
-    undefined,
-    config.renderTo
-  );
-  // console.log(chunker.pages)
-  console.log(`took: ${(chunker.performance / 1000).toFixed(2)}s`)
-});
-
-webBtn?.addEventListener('click', () => {
-  webBtn.classList.add('active')
-  printBtn?.classList.remove('active')
-  app?.classList.add('show')
-  print?.classList.remove('show')
+elem.webBtn?.addEventListener('click', () => {
+  elem.webBtn?.classList.add('active')
+  elem.pagesBtn?.classList.remove('active')
+  elem.app?.classList.add('show')
+  elem.printView?.classList.remove('show')
 })
 
-printBtn?.addEventListener('click', () => {
-  printBtn.classList.add('active')
-  webBtn?.classList.remove('active')
-  print?.classList.add('show')
-  app?.classList.remove('show')
+elem.pagesBtn?.addEventListener('click', () => {
+  elem.pagesBtn?.classList.add('active')
+  elem.webBtn?.classList.remove('active')
+  elem.printView?.classList.add('show')
+  elem.app?.classList.remove('show')
 })
 
-addEventListener("beforeprint", () => {
-  console.log('printing')
+elem.layoutSelect?.addEventListener('change', (e) => {
+  if (e.target instanceof HTMLSelectElement) {
+    const view = e.target.value
+    if (view === 'Single') {
+      elem.pages?.classList.remove('double')
+    }
+    if (view === 'Double') {
+      elem.pages?.classList.add('double')
+    }
+  }
+})
+
+elem.paperSelect?.addEventListener('change', (e) => {
+  if (e.target instanceof HTMLSelectElement) {
+    const size = e.target.value as Size;
+    config.paper.selectedSize = size;
+    renderPages()
+  }
+})
+
+elem.pagesEnabled?.addEventListener('change', (e) => {
+  if (e.target instanceof HTMLInputElement) {
+    if (e.target.checked) {
+      renderPages()
+    } else {
+      destroyPages()
+    }
+  }
+})
+
+elem.printBtn?.addEventListener('click', async () => {
+  await waitForRender()
+  window.print()
+})
+
+document.addEventListener("keydown", async (e) => {
+  if (e.metaKey && e.key === 'p') {
+    e.preventDefault()
+    await waitForRender()
+    window.print()
+  }
 });

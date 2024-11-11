@@ -1,0 +1,129 @@
+.pages {
+  --pagedjs-width: 210mm;
+  --pagedjs-height: 297mm;
+  --pagedjs-margin-top: 25mm;
+  --pagedjs-margin-right: 25mm;
+  --pagedjs-margin-left: 25mm;
+  --pagedjs-margin-bottom: 25mm;
+}
+
+@media screen {
+  .pages {
+    $gap: 1em;
+    margin: 0 auto;
+
+    .pagedjs_pages {
+      display: flex;
+      width: calc(var(--pagedjs-width) + ($gap * 2));
+      flex: 0;
+      flex-wrap: wrap;
+      margin: 0 auto;
+    }
+
+    .pagedjs_page {
+      flex: 0 0 auto;
+      background: white;
+      box-shadow: 0 0 0 1px #cfcfcf;
+      margin: $gap;
+    }
+
+    &.double {
+      &.loading {
+        visibility: hidden;
+      }
+
+      &:not(.loading) {
+        width: calc(((var(--pagedjs-width) * 2) + ($gap * 2)) / 2);
+        .pagedjs_pages {
+          width: calc((var(--pagedjs-width) * 2) + ($gap * 2));
+          transform: scale(0.5);
+          transform-origin: 0 0;
+        }
+      }
+
+      .pagedjs_page {
+        &:nth-child(2n) {
+          margin-right: 0;
+        }
+
+        &:nth-child(2n + 1) {
+          margin-left: 0;
+        }
+
+        &:first-child {
+          margin-left: calc(var(--pagedjs-width) + $gap);
+        }
+      }
+    }
+  }
+}
+
+.pagedjs_page {
+
+  // header and footer ------
+
+  .pagedjs_margin-top > div,
+  .pagedjs_margin-bottom > div {
+    display: flex;
+  }
+
+  .pagedjs_margin-top > div {
+    align-items: flex-end;
+    padding-bottom: 1em;
+  }
+
+  .pagedjs_margin-bottom > div {
+    align-items: flex-start;
+    padding-top: 1em;
+  }
+
+  .pagedjs_margin {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+
+    &.pagedjs_margin-top-left,
+    &.pagedjs_margin-bottom-left {
+      justify-content: left;
+    }
+
+    &.pagedjs_margin-top-center,
+    &.pagedjs_margin-bottom-center {
+      justify-content: center;
+    }
+
+    &.pagedjs_margin-top-right,
+    &.pagedjs_margin-bottom-right {
+      justify-content: right;
+    }
+  }
+
+  // first page ------
+
+  &:first-child {
+    .pagedjs_page_content > div {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+
+      h1 {
+        font-size: 1.8em;
+        text-align: center;
+      }
+
+      p {
+        padding-left: 2em;
+        padding-right: 2em;
+      }
+    }
+  }
+}
+
+// page styling ------
+
+.pagedjs_page_content > div > *:first-child,
+.pagedjs_page_content > div > .boxout:first-child *:first-child,
+.pagedjs_page_content > div > .boxout:first-child .type {
+  margin-top: 0;
+}
