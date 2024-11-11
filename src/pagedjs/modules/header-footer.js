@@ -69,7 +69,6 @@ function renderChapterTitle(fragment, config, klass) {
 function renderPageNumber(fragment, config, klass, pageNum, total) {
   const elem = fragment.querySelector(`.pagedjs_margin-${klass}`)
   elem.innerHTML = config.template(pageNum, total)
-  // elem.classList.add('counter')
 }
 
 let lastTitle = '';
