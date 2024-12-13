@@ -16,33 +16,21 @@ export default class Page {
 
   create(template, after) {
     let clone = document.importNode(this.pageTemplate.content, true);
+    this.pagesArea.appendChild(clone);
 
-    let page, index;
-    if (after) {
-      this.pagesArea.insertBefore(clone, after.nextElementSibling);
-      index = Array.prototype.indexOf.call(this.pagesArea.children, after.nextElementSibling);
-      page = this.pagesArea.children[index];
-    } else {
-      this.pagesArea.appendChild(clone);
-      page = this.pagesArea.lastChild;
-    }
-
-    let pagebox = page.querySelector(".pagedjs_pagebox");
+    let page = this.pagesArea.lastChild;
     let area = page.querySelector(".pagedjs_page_content");
-    let footnotesArea = page.querySelector(".pagedjs_footnote_area");
     let size = area.getBoundingClientRect();
 
     area.style.columnWidth = Math.round(size.width) + "px";
-    area.style.columnGap = "calc(var(--pagedjs-margin-right) + var(--pagedjs-margin-left))";
+    this.area = area;
 
     this.width = Math.round(size.width);
     this.height = Math.round(size.height);
 
     this.element = page;
-    this.pagebox = pagebox;
-    this.area = area;
-    this.footnotesArea = footnotesArea;
-
+    this.pagebox = page.querySelector(".pagedjs_pagebox");
+    this.footnotesArea = page.querySelector(".pagedjs_footnote_area");
     return page;
   }
 

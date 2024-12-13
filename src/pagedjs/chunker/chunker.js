@@ -36,6 +36,11 @@ export default class Chunker {
       previousAtPage.remove()
     }
 
+    const previousRenderArea = renderTo.querySelector('#pagedjs_render_area')
+    if (previousRenderArea) {
+      previousRenderArea.remove()
+    }
+
     const size = this.config.paper.selectedSize
     const paper = this.config.paper.sizes[size]
 
@@ -43,6 +48,12 @@ export default class Chunker {
     this.style.id = 'at-page'
     this.style.innerHTML = `@page { size: ${size}; margin: 0; padding: 0; }`
     renderTo.appendChild(this.style);
+
+    this.pageRenderArea = document.createElement("div");
+    this.pageRenderArea.id = 'pagedjs_render_area'
+    this.pageRenderArea.style.setProperty('--pagedjs-width', paper.width);
+    this.pageRenderArea.style.setProperty('--pagedjs-height', paper.height);
+    renderTo.appendChild(this.pageRenderArea);
 
     this.pagesArea = document.createElement("div");
     this.pagesArea.classList.add("pagedjs_pages");
@@ -61,6 +72,8 @@ export default class Chunker {
   afterPageLayout(fragment, page) {
     breaks.afterPageLayout(fragment, page)
     headerFooter.afterPageLayout(fragment, this.config.headerFooter, this.total)
+    this.pageRenderArea.removeChild(fragment)
+    this.pagesArea.append(fragment)
     // fragment.classList.remove('loading')
   }
 
@@ -260,7 +273,7 @@ export default class Chunker {
   addPage(blank) {
     let lastPage = this.pages[this.pages.length - 1];
     // Create a new page from the template
-    let page = new Page(this.pagesArea, this.pageTemplate, blank);
+    let page = new Page(this.pageRenderArea, this.pageTemplate, blank);
 
     this.pages.push(page);
 
@@ -330,12 +343,6 @@ export default class Chunker {
 
     page.index(this.total);
 
-    // for (const className of originalPage.element.classList) {
-    // 	if (className !== "pagedjs_left_page" && className !== "pagedjs_right_page") {
-    // 		page.element.classList.add(className);
-    // 	}
-    // }
-
     this.afterPageLayout(page.element, page)
   }
 
@@ -360,6 +367,7 @@ export default class Chunker {
   destroy() {
     this.removePages()
     this.pagesArea.remove()
+    this.pageRenderArea.remove()
     this.style.remove()
   }
 }

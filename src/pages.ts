@@ -9,7 +9,6 @@ let loading = true
 
 export async function renderPages() {
   loading = true
-  pages?.classList.add('loading')
   pagesBtn?.classList.add('loading')
 
   // console.log('chunking...')
@@ -17,7 +16,6 @@ export async function renderPages() {
   console.log(`took: ${(chunks.performance / 1000).toFixed(2)}s`)
 
   loading = false
-  pages?.classList.remove('loading')
   pagesBtn?.classList.remove('loading')
   pages?.dispatchEvent(new Event("pages-loaded"));
 }

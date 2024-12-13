@@ -1,8 +1,8 @@
 @use "sass:meta";
 @include meta.load-css('content.scss');
 @include meta.load-css('actions.scss');
-
-@import '../pagedjs/pagedjs.css';
+@include meta.load-css('../pagedjs/index.scss');
+@include meta.load-css('../pagedjs/interface.scss');
 @include meta.load-css('pages.scss');
 
 @media print {

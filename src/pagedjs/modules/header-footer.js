@@ -1,5 +1,3 @@
-import { cleanPseudoContent } from "../utils/css.js";
-
 export function afterPageLayout(fragment, headerFooter, pageNum, total) {
   if (pageNum === 1 && headerFooter.firstPage) {
     renderMargins(fragment, headerFooter.firstPage, pageNum, total)
@@ -85,6 +83,6 @@ function getRollingTitle(fragment, rollingTitleSelector) {
     varFirst = selected[0].textContent;
   }
 
-  return cleanPseudoContent(varFirst)
+  return varFirst
 }
 
